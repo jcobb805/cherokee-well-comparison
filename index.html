@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Well Comparison Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1419;
+    --panel: #171c24;
+    --panel2: #1f2630;
+    --border: #2a313c;
+    --text: #e6edf3;
+    --muted: #8b98a5;
+    --accent: #ffb347;
+    --w1: #ffb347;   /* Beaty 1-2-11-14CHX  - amber */
+    --w2: #5ac8fa;   /* Beaty 1-2-35CHX     - sky blue */
+    --w3: #7ee787;   /* Malson 1523 1-6H31H - green */
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  header {
+    padding: 22px 28px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+  header .meta { color: var(--muted); font-size: 12px; }
+  main { padding: 18px 28px 40px; max-width: 1680px; margin: 0 auto; }
+
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  @media (max-width: 900px) { .summary { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .card h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .swatch { width: 10px; height: 10px; border-radius: 2px; }
+  .card .sub { color: var(--muted); font-size: 11px; margin-bottom: 10px; }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 14px;
+    font-size: 12px;
+  }
+  .stats span { color: var(--muted); }
+  .stats b { font-weight: 600; color: var(--text); }
+
+  .controls {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .controls label { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); }
+  .controls .pill {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    padding: 4px 10px;
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 12px;
+  }
+  .controls .pill input { accent-color: var(--accent); }
+  .seg {
+    display: inline-flex;
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .seg button {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .seg button.active { background: var(--accent); color: #1a1208; font-weight: 600; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
+  .chart-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px 10px;
+  }
+  .chart-card h3 {
+    margin: 0 0 2px;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .chart-card .unit { color: var(--muted); font-size: 11px; font-weight: 400; }
+  .chart-wrap { position: relative; height: 320px; margin-top: 6px; }
+
+  footer {
+    padding: 14px 28px 26px;
+    color: var(--muted);
+    font-size: 11px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Well Comparison Dashboard</h1>
+    <div class="meta">Beaty 1-2-11-14CHX &middot; Beaty 1-2-35CHX &middot; Malson 1523 1-6H31H</div>
+  </div>
+  <div class="meta" id="generated"></div>
+</header>
+
+<main>
+  <section class="summary" id="summary"></section>
+
+  <section class="controls">
+    <div class="seg" id="xmode-seg" title="X-axis: calendar date or days since first flow">
+      <button data-mode="days" class="active">Days on Flow</button>
+      <button data-mode="date">Calendar Date</button>
+    </div>
+    <div class="seg" id="smooth-seg" title="Smoothing window (centered moving average)">
+      <button data-smooth="1" class="active">Raw</button>
+      <button data-smooth="3">3-day MA</button>
+      <button data-smooth="7">7-day MA</button>
+    </div>
+    <div id="well-toggles"></div>
+    <div style="flex:1"></div>
+    <div class="meta" id="xmode-hint">Aligning wells from their first flow day for apples-to-apples comparison</div>
+  </section>
+
+  <section class="grid">
+    <div class="chart-card">
+      <h3>Oil Rate <span class="unit">BOPD (bbl/day)</span></h3>
+      <div class="chart-wrap"><canvas id="chart-bopd"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Gas Rate <span class="unit">MCFD (Mcf/day)</span></h3>
+      <div class="chart-wrap"><canvas id="chart-mcfd"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Water Rate <span class="unit">BWPD (bbl/day)</span></h3>
+      <div class="chart-wrap"><canvas id="chart-bwpd"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Flowing Casing Pressure <span class="unit">FCP (psi)</span></h3>
+      <div class="chart-wrap"><canvas id="chart-fcp"></canvas></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Sourced from Crawley Morning Activity Reports (Beaty wells) and Malson daily production workbook. Beaty wells are currently in flowback; rates reflect reported 24-hour sales.
+</footer>
+
+<script>
+const DATA = {"generated_at":"2026-04-23T10:37:14","wells":[{"id":"beaty_11_14","name":"Beaty 1-2-11-14CHX","api":"35-129-00050","operator":"Crawley Petroleum","location":"Roger Mills Co, Sec 11/14-13N-23W","first_flow":"2026-04-02","data":[{"date":"2026-04-02","hours":14,"bopd":88.0,"mcfd":2053.0,"bwpd":1721.0,"fcp":6097.0},{"date":"2026-04-03","hours":24,"bopd":283.0,"mcfd":4258.0,"bwpd":2146.0,"fcp":6176.0},{"date":"2026-04-04","hours":24,"bopd":347.0,"mcfd":5377.0,"bwpd":2219.0,"fcp":6115.0},{"date":"2026-04-05","hours":24,"bopd":374.0,"mcfd":5808.0,"bwpd":2297.0,"fcp":6035.0},{"date":"2026-04-06","hours":24,"bopd":369.0,"mcfd":5824.0,"bwpd":2243.0,"fcp":5971.0},{"date":"2026-04-07","hours":24,"bopd":394.0,"mcfd":6811.0,"bwpd":2614.0,"fcp":5719.0},{"date":"2026-04-08","hours":24,"bopd":393.0,"mcfd":6676.0,"bwpd":2895.0,"fcp":5483.0},{"date":"2026-04-09","hours":24,"bopd":360.0,"mcfd":6296.0,"bwpd":2670.0,"fcp":5453.0},{"date":"2026-04-11","hours":24,"bopd":363.0,"mcfd":5225.0,"bwpd":2680.0,"fcp":5225.0},{"date":"2026-04-12","hours":24,"bopd":357.0,"mcfd":6274.0,"bwpd":2664.0,"fcp":5119.0},{"date":"2026-04-13","hours":24,"bopd":383.0,"mcfd":6188.0,"bwpd":2704.0,"fcp":5020.0},{"date":"2026-04-14","hours":24,"bopd":383.0,"mcfd":6085.0,"bwpd":2607.0,"fcp":4899.0},{"date":"2026-04-18","hours":24,"bopd":285.0,"mcfd":5417.0,"bwpd":2295.0,"fcp":4037.0},{"date":"2026-04-19","hours":24,"bopd":356.0,"mcfd":6404.0,"bwpd":2430.0,"fcp":4255.0},{"date":"2026-04-20","hours":24,"bopd":371.0,"mcfd":6012.0,"bwpd":2575.0,"fcp":4055.0},{"date":"2026-04-21","hours":24,"bopd":311.0,"mcfd":6064.0,"bwpd":2430.0,"fcp":3833.0},{"date":"2026-04-22","hours":24,"bopd":277.0,"mcfd":5696.0,"bwpd":2431.0,"fcp":3830.0}],"last_report":"2026-04-22","days_on":17,"cum_bo":5694.0,"cum_mcf":96468.0,"cum_bw":41621.0,"peak_bopd":394.0,"peak_mcfd":6811.0},{"id":"beaty_35","name":"Beaty 1-2-35CHX","api":"35-129-00051","operator":"Crawley Petroleum","location":"Roger Mills Co, Sec 2-13N-23W / Sec 35-14N-23W","first_flow":"2026-04-03","data":[{"date":"2026-04-03","hours":17,"bopd":110.0,"mcfd":2230.0,"bwpd":1893.0,"fcp":5983.0},{"date":"2026-04-04","hours":24,"bopd":259.0,"mcfd":4045.0,"bwpd":2190.0,"fcp":5934.0},{"date":"2026-04-05","hours":24,"bopd":349.0,"mcfd":5366.0,"bwpd":2418.0,"fcp":5845.0},{"date":"2026-04-06","hours":24,"bopd":388.0,"mcfd":6026.0,"bwpd":2459.0,"fcp":5781.0},{"date":"2026-04-07","hours":24,"bopd":385.0,"mcfd":6147.0,"bwpd":2271.0,"fcp":6147.0},{"date":"2026-04-08","hours":24,"bopd":402.0,"mcfd":6460.0,"bwpd":2281.0,"fcp":5507.0},{"date":"2026-04-09","hours":24,"bopd":394.0,"mcfd":6604.0,"bwpd":2273.0,"fcp":5397.0},{"date":"2026-04-11","hours":24,"bopd":380.0,"mcfd":6608.0,"bwpd":2085.0,"fcp":5200.0},{"date":"2026-04-12","hours":24,"bopd":372.0,"mcfd":6622.0,"bwpd":2254.0,"fcp":5115.0},{"date":"2026-04-13","hours":24,"bopd":368.0,"mcfd":6598.0,"bwpd":2197.0,"fcp":5029.0},{"date":"2026-04-14","hours":24,"bopd":383.0,"mcfd":6554.0,"bwpd":2116.0,"fcp":2941.0},{"date":"2026-04-15","hours":24,"bopd":359.0,"mcfd":6496.0,"bwpd":1930.0,"fcp":4848.0},{"date":"2026-04-16","hours":24,"bopd":343.0,"mcfd":6318.0,"bwpd":1915.0,"fcp":4770.0},{"date":"2026-04-17","hours":24,"bopd":350.0,"mcfd":6375.0,"bwpd":2043.0,"fcp":4693.0},{"date":"2026-04-18","hours":24,"bopd":334.0,"mcfd":6289.0,"bwpd":1913.0,"fcp":4580.0},{"date":"2026-04-19","hours":24,"bopd":342.0,"mcfd":6240.0,"bwpd":1965.0,"fcp":4494.0},{"date":"2026-04-20","hours":24,"bopd":323.0,"mcfd":5140.0,"bwpd":1807.0,"fcp":4408.0},{"date":"2026-04-21","hours":24,"bopd":345.0,"mcfd":6531.0,"bwpd":1997.0,"fcp":4168.0},{"date":"2026-04-22","hours":24,"bopd":337.0,"mcfd":6442.0,"bwpd":1932.0,"fcp":4051.0}],"last_report":"2026-04-22","days_on":19,"cum_bo":6523.0,"cum_mcf":113091.0,"cum_bw":39939.0,"peak_bopd":402.0,"peak_mcfd":6622.0},{"id":"malson","name":"Malson 1523 1-6H31H","api":"35-129-24187","operator":"\u2014","location":"Sec 15/23 (1523 unit)","first_flow":"2025-09-11","data":[{"date":"2025-09-11","bopd":63.94,"mcfd":683,"bwpd":1986.3,"fcp":3995},{"date":"2025-09-12","bopd":432.29,"mcfd":2103.12,"bwpd":2689.9,"fcp":4097},{"date":"2025-09-13","bopd":545.64,"mcfd":2127.3,"bwpd":2623.33,"fcp":4152},{"date":"2025-09-14","bopd":673.06,"mcfd":2636.89,"bwpd":2575.3,"fcp":4197},{"date":"2025-09-15","bopd":793.23,"mcfd":3142.97,"bwpd":2495.4,"fcp":4212},{"date":"2025-09-16","bopd":877.17,"mcfd":3653.81,"bwpd":2480.02,"fcp":4188},{"date":"2025-09-17","bopd":957.4,"mcfd":4069.21,"bwpd":2481.4,"fcp":4156},{"date":"2025-09-18","bopd":1033.45,"mcfd":4421.13,"bwpd":2432.76,"fcp":4095},{"date":"2025-09-19","bopd":1050.31,"mcfd":4679.81,"bwpd":2432.83,"fcp":4059},{"date":"2025-09-20","bopd":1087.18,"mcfd":4834.75,"bwpd":2390.76,"fcp":4027},{"date":"2025-09-21","bopd":897.04,"mcfd":4929.73,"bwpd":2356.26,"fcp":3976},{"date":"2025-09-22","bopd":1067.13,"mcfd":4995.23,"bwpd":2263.78,"fcp":3937},{"date":"2025-09-23","bopd":1074.45,"mcfd":4999.55,"bwpd":2210.42,"fcp":3926},{"date":"2025-09-24","bopd":1095.76,"mcfd":5141.96,"bwpd":2154.4,"fcp":3847},{"date":"2025-09-25","bopd":1108.56,"mcfd":5227,"bwpd":2057.77,"fcp":3081},{"date":"2025-09-26","bopd":1093.34,"mcfd":5280.17,"bwpd":1969.28,"fcp":3758},{"date":"2025-09-27","bopd":1118.9,"mcfd":5456.15,"bwpd":1971.78,"fcp":3652},{"date":"2025-09-28","bopd":1112.94,"mcfd":5530.62,"bwpd":1939.52,"fcp":3594},{"date":"2025-09-29","bopd":1118.03,"mcfd":5518.87,"bwpd":1907.21,"fcp":3537},{"date":"2025-09-30","bopd":1094.13,"mcfd":5476.28,"bwpd":1850.79,"fcp":3487},{"date":"2025-10-01","bopd":1080.25,"mcfd":5469.98,"bwpd":1830.29,"fcp":3440},{"date":"2025-10-02","bopd":1065.63,"mcfd":5472.76,"bwpd":1778.24,"fcp":3393},{"date":"2025-10-03","bopd":1047.87,"mcfd":5473.01,"bwpd":1739.72,"fcp":3348},{"date":"2025-10-04","bopd":1030.32,"mcfd":5464.4,"bwpd":1692.95,"fcp":3305},{"date":"2025-10-05","bopd":1043.15,"mcfd":5442.8,"bwpd":1654.6,"fcp":3259},{"date":"2025-10-06","bopd":995.21,"mcfd":5416.6,"bwpd":1643.58,"fcp":3210},{"date":"2025-10-07","bopd":911.75,"mcfd":4787.2,"bwpd":1556.91,"fcp":3876},{"date":"2025-10-08","bopd":487.7,"mcfd":2794.4,"bwpd":529.28,"fcp":3862},{"date":"2025-10-09","bopd":793.77,"mcfd":4054.5,"bwpd":785.57,"fcp":3878},{"date":"2025-10-10","bopd":705.32,"mcfd":3635.1,"bwpd":698.89,"fcp":3936},{"date":"2025-10-11","bopd":815.13,"mcfd":4251.5,"bwpd":821.16,"fcp":3566},{"date":"2025-10-12","bopd":1025.37,"mcfd":5165.2,"bwpd":1146.82,"fcp":3376},{"date":"2025-10-13","bopd":980.21,"mcfd":5177.3,"bwpd":1182.94,"fcp":3233},{"date":"2025-10-14","bopd":968.66,"mcfd":5164.7,"bwpd":1211.35,"fcp":3160},{"date":"2025-10-15","bopd":941.13,"mcfd":5080.6,"bwpd":1294.36,"fcp":3126},{"date":"2025-10-16","bopd":899.13,"mcfd":5026,"bwpd":1276.68,"fcp":3089},{"date":"2025-10-17","bopd":907.03,"mcfd":5030.4,"bwpd":1201.62,"fcp":3058},{"date":"2025-10-18","bopd":884.47,"mcfd":4997.2,"bwpd":1220.31,"fcp":3020},{"date":"2025-10-19","bopd":877.36,"mcfd":4952.8,"bwpd":1247.84,"fcp":3004},{"date":"2025-10-20","bopd":881.83,"mcfd":4898.1,"bwpd":1166.56,"fcp":2954},{"date":"2025-10-21","bopd":865.24,"mcfd":4880.1,"bwpd":1124.13,"fcp":2927},{"date":"2025-10-22","bopd":829.7,"mcfd":4772.55,"bwpd":1116.72,"fcp":2900},{"date":"2025-10-23","bopd":837.25,"mcfd":4772.55,"bwpd":1117.22,"fcp":2926},{"date":"2025-10-24","bopd":806.24,"mcfd":4672.4,"bwpd":1150.08,"fcp":2913},{"date":"2025-10-25","bopd":798.43,"mcfd":4619.1,"bwpd":1063.78,"fcp":2967},{"date":"2025-10-26","bopd":788.42,"mcfd":4605.4,"bwpd":1172.28,"fcp":2871},{"date":"2025-10-27","bopd":813.11,"mcfd":4721.9,"bwpd":1156.95,"fcp":2804},{"date":"2025-10-28","bopd":812.72,"mcfd":4689.2,"bwpd":1070.27,"fcp":2714},{"date":"2025-10-29","bopd":825.7,"mcfd":4786.5,"bwpd":1071.66,"fcp":2680},{"date":"2025-10-30","bopd":838.91,"mcfd":4875.5,"bwpd":1101.43,"fcp":2527},{"date":"2025-10-31","bopd":848.15,"mcfd":4989.8,"bwpd":1149.31,"fcp":2420},{"date":"2025-11-01","bopd":877.9,"mcfd":5037.9,"bwpd":1073.97,"fcp":2369},{"date":"2025-11-02","bopd":888.94,"mcfd":5142.8,"bwpd":1246.14,"fcp":2324},{"date":"2025-11-03","bopd":821.17,"mcfd":4890,"bwpd":1366.72,"fcp":2282},{"date":"2025-11-04","bopd":800.32,"mcfd":4863,"bwpd":976.29,"fcp":2244},{"date":"2025-11-05","bopd":798.29,"mcfd":4819,"bwpd":1290.62,"fcp":2209},{"date":"2025-11-06","bopd":780.98,"mcfd":4770,"bwpd":1268.92,"fcp":2185},{"date":"2025-11-07","bopd":787.01,"mcfd":4687.7,"bwpd":1277.68,"fcp":2154},{"date":"2025-11-08","bopd":767.15,"mcfd":4674,"bwpd":1083.44,"fcp":2128},{"date":"2025-11-09","bopd":765.59,"mcfd":4636.8,"bwpd":1006.33,"fcp":2114},{"date":"2025-11-10","bopd":741.0,"mcfd":4603.4,"bwpd":820.54,"fcp":2070},{"date":"2025-11-11","bopd":748.61,"mcfd":4560.7,"bwpd":1107.22,"fcp":2049},{"date":"2025-11-12","bopd":733.21,"mcfd":4538.5,"bwpd":765.52,"fcp":2011},{"date":"2025-11-13","bopd":722.45,"mcfd":4514.3,"bwpd":1132.82,"fcp":1997},{"date":"2025-11-14","bopd":702.32,"mcfd":4382.2,"bwpd":928.03,"fcp":1980},{"date":"2025-11-15","bopd":733.78,"mcfd":4432.9,"bwpd":937.76,"fcp":1948},{"date":"2025-11-16","bopd":689.07,"mcfd":4448.8,"bwpd":949.0,"fcp":1922},{"date":"2025-11-17","bopd":701.4,"mcfd":4407.6,"bwpd":922.39,"fcp":1896},{"date":"2025-11-18","bopd":707.38,"mcfd":4367,"bwpd":874.48,"fcp":1875},{"date":"2025-11-19","bopd":704.51,"mcfd":4284.8,"bwpd":952.2,"fcp":1856},{"date":"2025-11-20","bopd":687.78,"mcfd":4233.5,"bwpd":886.06,"fcp":1834},{"date":"2025-11-21","bopd":690.43,"mcfd":4234.3,"bwpd":872.82,"fcp":1820},{"date":"2025-11-22","bopd":675.07,"mcfd":4219.7,"bwpd":984.48,"fcp":1809},{"date":"2025-11-23","bopd":665.65,"mcfd":4191.7,"bwpd":845.02,"fcp":1783},{"date":"2025-11-24","bopd":660.9,"mcfd":4156.3,"bwpd":702.12,"fcp":1776},{"date":"2025-11-25","bopd":666.15,"mcfd":4121.9,"bwpd":938.15,"fcp":1744},{"date":"2025-11-26","bopd":651.66,"mcfd":4119.7,"bwpd":795.25,"fcp":1722},{"date":"2025-11-27","bopd":642.94,"mcfd":4102.2,"bwpd":804.98,"fcp":1710},{"date":"2025-11-28","bopd":635.95,"mcfd":4078.5,"bwpd":780.08,"fcp":1707},{"date":"2025-11-29","bopd":625.56,"mcfd":4043,"bwpd":812.74,"fcp":1690},{"date":"2025-11-30","bopd":634.99,"mcfd":4011.8,"bwpd":761.08,"fcp":1677},{"date":"2025-12-01","bopd":623.02,"mcfd":3979.5,"bwpd":878.65,"fcp":1660},{"date":"2025-12-02","bopd":627.21,"mcfd":3958.7,"bwpd":623.4,"fcp":1637},{"date":"2025-12-03","bopd":614.75,"mcfd":3923.4,"bwpd":741.35,"fcp":1622},{"date":"2025-12-04","bopd":602.06,"mcfd":3891.5,"bwpd":738.57,"fcp":1672},{"date":"2025-12-05","bopd":613.87,"mcfd":3862.3,"bwpd":854.6,"fcp":1611},{"date":"2025-12-06","bopd":613.6,"mcfd":3808.8,"bwpd":615.52,"fcp":1620},{"date":"2025-12-07","bopd":598.9,"mcfd":3781,"bwpd":733.28,"fcp":1578},{"date":"2025-12-08","bopd":592.06,"mcfd":3750.4,"bwpd":701.31,"fcp":1566}],"last_report":"2025-12-08","days_on":89,"cum_bo":72292.7,"cum_mcf":399576.7,"cum_bw":118292.2,"peak_bopd":1118.9,"peak_mcfd":5530.62}]};
+const WELL_COLORS = { beaty_11_14: getCSS("--w1"), beaty_35: getCSS("--w2"), malson: getCSS("--w3") };
+const METRICS = [
+  { key: "bopd", id: "chart-bopd", label: "BOPD" },
+  { key: "mcfd", id: "chart-mcfd", label: "MCFD" },
+  { key: "bwpd", id: "chart-bwpd", label: "BWPD" },
+  { key: "fcp",  id: "chart-fcp",  label: "FCP" },
+];
+
+function getCSS(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function fmt(n) {
+  if (n == null || isNaN(n)) return "—";
+  if (Math.abs(n) >= 1e6) return (n/1e6).toFixed(2) + "M";
+  if (Math.abs(n) >= 1e3) return (n/1e3).toFixed(n >= 10000 ? 0 : 1) + "k";
+  return n.toLocaleString(undefined, { maximumFractionDigits: 1 });
+}
+
+document.getElementById("generated").textContent =
+  "Data current: " + DATA.wells.map(w => w.name.split(" ")[0] + " through " + w.last_report).join(" · ");
+
+// Summary cards
+const summaryEl = document.getElementById("summary");
+DATA.wells.forEach(w => {
+  const col = WELL_COLORS[w.id];
+  const el = document.createElement("div");
+  el.className = "card";
+  el.innerHTML = `
+    <h3><span class="swatch" style="background:${col}"></span>${w.name}</h3>
+    <div class="sub">${w.location} · API ${w.api}</div>
+    <div class="stats">
+      <span>First flow</span><b>${w.first_flow || "—"}</b>
+      <span>Last report</span><b>${w.last_report || "—"}</b>
+      <span>Days reported</span><b>${w.days_on || 0}</b>
+      <span>Peak BOPD</span><b>${fmt(w.peak_bopd)}</b>
+      <span>Peak MCFD</span><b>${fmt(w.peak_mcfd)}</b>
+      <span>Cum oil (bbl)</span><b>${fmt(w.cum_bo)}</b>
+      <span>Cum gas (Mcf)</span><b>${fmt(w.cum_mcf)}</b>
+      <span>Cum water (bbl)</span><b>${fmt(w.cum_bw)}</b>
+    </div>`;
+  summaryEl.appendChild(el);
+});
+
+// Well toggles
+const toggleHost = document.getElementById("well-toggles");
+const active = new Set(DATA.wells.map(w => w.id));
+DATA.wells.forEach(w => {
+  const col = WELL_COLORS[w.id];
+  const l = document.createElement("label");
+  l.className = "pill";
+  l.innerHTML = `<input type="checkbox" checked data-id="${w.id}"><span class="swatch" style="background:${col}"></span>${w.name}`;
+  l.querySelector("input").addEventListener("change", e => {
+    if (e.target.checked) active.add(w.id); else active.delete(w.id);
+    render();
+  });
+  toggleHost.appendChild(l);
+});
+
+// Segmented controls
+let xMode = "days";   // "days" or "date"
+let smoothN = 1;
+document.querySelectorAll("#xmode-seg button").forEach(b => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll("#xmode-seg button").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    xMode = b.dataset.mode;
+    document.getElementById("xmode-hint").textContent = xMode === "days"
+      ? "Aligning wells from their first flow day for apples-to-apples comparison"
+      : "Plotting actual calendar dates (wells started at different times)";
+    render();
+  });
+});
+document.querySelectorAll("#smooth-seg button").forEach(b => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll("#smooth-seg button").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    smoothN = parseInt(b.dataset.smooth, 10);
+    render();
+  });
+});
+
+function movingAverage(arr, n) {
+  if (n <= 1) return arr.slice();
+  const out = new Array(arr.length);
+  const half = Math.floor(n / 2);
+  for (let i = 0; i < arr.length; i++) {
+    let sum = 0, cnt = 0;
+    for (let j = i - half; j <= i + half; j++) {
+      if (j < 0 || j >= arr.length) continue;
+      if (arr[j] == null || isNaN(arr[j])) continue;
+      sum += arr[j]; cnt++;
+    }
+    out[i] = cnt ? sum / cnt : null;
+  }
+  return out;
+}
+
+const charts = {};
+METRICS.forEach(m => {
+  const ctx = document.getElementById(m.id).getContext("2d");
+  charts[m.key] = new Chart(ctx, {
+    type: "line",
+    data: { datasets: [] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "nearest", intersect: false, axis: "x" },
+      plugins: {
+        legend: { labels: { color: getCSS("--text"), boxWidth: 12, usePointStyle: true } },
+        tooltip: {
+          backgroundColor: "#0b0f14",
+          borderColor: getCSS("--border"),
+          borderWidth: 1,
+          titleColor: getCSS("--text"),
+          bodyColor: getCSS("--text"),
+          callbacks: {
+            label: (c) => `${c.dataset.label}: ${fmt(c.parsed.y)}`,
+          },
+        },
+      },
+      scales: {
+        x: {
+          type: "linear",
+          title: { display: true, color: getCSS("--muted"), text: "" },
+          ticks: { color: getCSS("--muted") },
+          grid: { color: "rgba(255,255,255,0.05)" },
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { color: getCSS("--muted"), callback: v => fmt(v) },
+          grid: { color: "rgba(255,255,255,0.06)" },
+        },
+      },
+      elements: {
+        point: { radius: 0, hoverRadius: 4 },
+        line: { borderWidth: 2, tension: 0.15 },
+      },
+    },
+  });
+});
+
+function daysBetween(a, b) { return Math.round((new Date(b) - new Date(a)) / 86400000); }
+
+function render() {
+  METRICS.forEach(m => {
+    const datasets = [];
+    DATA.wells.forEach(w => {
+      if (!active.has(w.id)) return;
+      const col = WELL_COLORS[w.id];
+      const vals = w.data.map(d => d[m.key]);
+      const smoothed = movingAverage(vals, smoothN);
+      let points;
+      if (xMode === "days") {
+        points = w.data.map((d, i) => ({ x: daysBetween(w.first_flow, d.date), y: smoothed[i] }));
+      } else {
+        points = w.data.map((d, i) => ({ x: new Date(d.date).getTime(), y: smoothed[i] }));
+      }
+      datasets.push({
+        label: w.name,
+        data: points,
+        borderColor: col,
+        backgroundColor: col + "33",
+        spanGaps: true,
+      });
+    });
+
+    const chart = charts[m.key];
+    chart.data.datasets = datasets;
+    if (xMode === "days") {
+      chart.options.scales.x.type = "linear";
+      chart.options.scales.x.title.text = "Days since first flow";
+      chart.options.scales.x.ticks.callback = (v) => v;
+    } else {
+      chart.options.scales.x.type = "time";
+      chart.options.scales.x.title.text = "Date";
+    }
+    chart.update();
+  });
+}
+
+// Load Chart.js date adapter once we know we might need it.
+// Chart.js 4 needs an adapter for time scales; dynamically inject luxon + adapter.
+(function loadTimeAdapter() {
+  const s1 = document.createElement("script");
+  s1.src = "https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js";
+  const s2 = document.createElement("script");
+  s2.src = "https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1";
+  s1.onload = () => document.head.appendChild(s2);
+  s2.onload = () => render();
+  document.head.appendChild(s1);
+})();
+
+render();
+</script>
+</body>
+</html>
