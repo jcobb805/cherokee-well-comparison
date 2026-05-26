@@ -64,6 +64,7 @@
 <nav>
   <a href="index.html">Beaty / Malson / Quetzal</a>
   <a href="dusty.html" class="active">Dusty 1H vs 2H</a>
+  <a href="redfork.html">Red Fork Cohort</a>
 </nav>
 
 <main>
@@ -90,7 +91,7 @@
 <footer id="footer"></footer>
 
 <script>
-const DATA = {"title":"Dusty 1H vs 2H \u2014 Mewbourne (Dewey Co, OK)","subtitle":"Surface 18N-16W Sec 31; laterals run S into Sec 6/7 of 17N-16W. Red Fork. Enverus state production (monthly).","source":"Enverus Developer API v3 \u2014 production + wells endpoints","wells":[{"id":"dusty_1h","name":"Dusty 6/7 BP 1H","api":"35-043-23806","color":"#ffb347","operator":"MEWBOURNE OIL","location":"18N-16W-31","first_prod_date":"2025-10-01","last_report":"2026-02","months_reported":5,"cum_bo":48708,"cum_mcf":111887,"peak_bopd":458.81,"peak_mcfd":1060.77,"data":[{"date":"2025-10-15","bopd":241.23,"mcfd":380.97},{"date":"2025-11-15","bopd":429.17,"mcfd":641.13},{"date":"2025-12-15","bopd":458.81,"mcfd":1060.77},{"date":"2026-01-15","bopd":272.55,"mcfd":850.35},{"date":"2026-02-15","bopd":202.96,"mcfd":771.36}],"months":[{"month":"2025-10-01","producing_days":31,"oil_bbl":7478,"gas_mcf":11810,"water_bbl":0,"cd_bopd":241.23,"cd_mcfd":380.97},{"month":"2025-11-01","producing_days":30,"oil_bbl":12875,"gas_mcf":19234,"water_bbl":0,"cd_bopd":429.17,"cd_mcfd":641.13},{"month":"2025-12-01","producing_days":31,"oil_bbl":14223,"gas_mcf":32884,"water_bbl":0,"cd_bopd":458.81,"cd_mcfd":1060.77},{"month":"2026-01-01","producing_days":31,"oil_bbl":8449,"gas_mcf":26361,"water_bbl":0,"cd_bopd":272.55,"cd_mcfd":850.35},{"month":"2026-02-01","producing_days":28,"oil_bbl":5683,"gas_mcf":21598,"water_bbl":0,"cd_bopd":202.96,"cd_mcfd":771.36}],"frac":{"operator":"MEWBOURNE OIL","interval":"RED FORK","formation":"CHEROKEE","location":"18N-16W-31","spud_date":"2025-05-02","completion_date":"2025-10-07","first_prod_date":"2025-10-01","lateral_ft":9903,"tvd_ft":9415.52,"proppant_lbs":12134165,"proppant_intensity_lbs_per_ft":1229.7725,"fluid_bbl":284273,"fluid_intensity_bbl_per_ft":28.81048,"water_intensity_gal_per_ft":1210.0402,"frac_job_type":"SLICKWATER HC","fluid_type":"FRESH WATER","proppant_type":"SAND ONLY"}},{"id":"dusty_2h","name":"Dusty 6/7 CO 2H","api":"35-043-23805","color":"#5ac8fa","operator":"MEWBOURNE OIL","location":"18N-16W-31","first_prod_date":"2025-10-01","last_report":"2026-02","months_reported":5,"cum_bo":270299,"cum_mcf":373582,"peak_bopd":2121.19,"peak_mcfd":4483.36,"data":[{"date":"2025-10-15","bopd":1697.23,"mcfd":1420.16},{"date":"2025-11-15","bopd":1468.8,"mcfd":1304},{"date":"2025-12-15","bopd":2121.19,"mcfd":2116.26},{"date":"2026-01-15","bopd":2051.9,"mcfd":3203.19},{"date":"2026-02-15","bopd":1580.54,"mcfd":4483.36}],"months":[{"month":"2025-10-01","producing_days":31,"oil_bbl":52614,"gas_mcf":44025,"water_bbl":0,"cd_bopd":1697.23,"cd_mcfd":1420.16},{"month":"2025-11-01","producing_days":30,"oil_bbl":44064,"gas_mcf":39120,"water_bbl":0,"cd_bopd":1468.8,"cd_mcfd":1304},{"month":"2025-12-01","producing_days":31,"oil_bbl":65757,"gas_mcf":65604,"water_bbl":0,"cd_bopd":2121.19,"cd_mcfd":2116.26},{"month":"2026-01-01","producing_days":31,"oil_bbl":63609,"gas_mcf":99299,"water_bbl":0,"cd_bopd":2051.9,"cd_mcfd":3203.19},{"month":"2026-02-01","producing_days":28,"oil_bbl":44255,"gas_mcf":125534,"water_bbl":0,"cd_bopd":1580.54,"cd_mcfd":4483.36}],"frac":{"operator":"MEWBOURNE OIL","interval":"RED FORK","formation":"CHEROKEE","location":"18N-16W-31","spud_date":"2025-05-01","completion_date":"2025-10-07","first_prod_date":"2025-10-01","lateral_ft":9997,"tvd_ft":9367.25,"proppant_lbs":12026222,"proppant_intensity_lbs_per_ft":1216.7363,"fluid_bbl":284187,"fluid_intensity_bbl_per_ft":28.752226,"water_intensity_gal_per_ft":1207.5935,"frac_job_type":"SLICKWATER HC","fluid_type":"FRESH WATER","proppant_type":"SAND ONLY"}}]};
+const DATA = {"title":"Dusty 1H vs 2H \u2014 Mewbourne (Dewey Co, OK)","subtitle":"Surface 18N-16W Sec 31; laterals run S into Sec 6/7 of 17N-16W. Red Fork. Enverus state production (monthly).","source":"Enverus Developer API v3 \u2014 production + wells endpoints","wells":[{"id":"dusty_1h","name":"Dusty 6/7 BP 1H","api":"35-043-23806","color":"#ffb347","operator":"MEWBOURNE OIL","location":"18N-16W-31","first_prod_date":"2025-10-01","last_report":"2026-02","months_reported":5,"cum_bo":48708,"cum_mcf":111887,"peak_bopd":458.81,"peak_mcfd":1060.77,"data":[{"date":"2025-10-15","bopd":241.23,"mcfd":380.97},{"date":"2025-11-15","bopd":429.17,"mcfd":641.13},{"date":"2025-12-15","bopd":458.81,"mcfd":1060.77},{"date":"2026-01-15","bopd":272.55,"mcfd":850.35},{"date":"2026-02-15","bopd":202.96,"mcfd":771.36}],"months":[{"month":"2025-10-01","producing_days":31,"oil_bbl":7478,"gas_mcf":11810,"water_bbl":0,"cd_bopd":241.23,"cd_mcfd":380.97},{"month":"2025-11-01","producing_days":30,"oil_bbl":12875,"gas_mcf":19234,"water_bbl":0,"cd_bopd":429.17,"cd_mcfd":641.13},{"month":"2025-12-01","producing_days":31,"oil_bbl":14223,"gas_mcf":32884,"water_bbl":0,"cd_bopd":458.81,"cd_mcfd":1060.77},{"month":"2026-01-01","producing_days":31,"oil_bbl":8449,"gas_mcf":26361,"water_bbl":0,"cd_bopd":272.55,"cd_mcfd":850.35},{"month":"2026-02-01","producing_days":28,"oil_bbl":5683,"gas_mcf":21598,"water_bbl":0,"cd_bopd":202.96,"cd_mcfd":771.36}],"frac":{"operator":"MEWBOURNE OIL","interval":"RED FORK","formation":"CHEROKEE","location":"18N-16W-31","spud_date":"2025-05-02","completion_date":"2025-10-07","first_prod_date":"2025-10-01","subplay":"STACK NW EXTENSION GAS","lateral_ft":9903,"tvd_ft":9415.52,"upper_perf_ft":9714,"gor_scf_per_bbl":2297.097,"oil_gravity_api":41,"proppant_lbs":12134165,"proppant_intensity_lbs_per_ft":1229.7725,"fluid_bbl":284273,"fluid_intensity_bbl_per_ft":28.81048,"water_intensity_gal_per_ft":1210.0402,"frac_job_type":"SLICKWATER HC","fluid_type":"FRESH WATER","proppant_type":"SAND ONLY"}},{"id":"dusty_2h","name":"Dusty 6/7 CO 2H","api":"35-043-23805","color":"#5ac8fa","operator":"MEWBOURNE OIL","location":"18N-16W-31","first_prod_date":"2025-10-01","last_report":"2026-02","months_reported":5,"cum_bo":270299,"cum_mcf":373582,"peak_bopd":2121.19,"peak_mcfd":4483.36,"data":[{"date":"2025-10-15","bopd":1697.23,"mcfd":1420.16},{"date":"2025-11-15","bopd":1468.8,"mcfd":1304},{"date":"2025-12-15","bopd":2121.19,"mcfd":2116.26},{"date":"2026-01-15","bopd":2051.9,"mcfd":3203.19},{"date":"2026-02-15","bopd":1580.54,"mcfd":4483.36}],"months":[{"month":"2025-10-01","producing_days":31,"oil_bbl":52614,"gas_mcf":44025,"water_bbl":0,"cd_bopd":1697.23,"cd_mcfd":1420.16},{"month":"2025-11-01","producing_days":30,"oil_bbl":44064,"gas_mcf":39120,"water_bbl":0,"cd_bopd":1468.8,"cd_mcfd":1304},{"month":"2025-12-01","producing_days":31,"oil_bbl":65757,"gas_mcf":65604,"water_bbl":0,"cd_bopd":2121.19,"cd_mcfd":2116.26},{"month":"2026-01-01","producing_days":31,"oil_bbl":63609,"gas_mcf":99299,"water_bbl":0,"cd_bopd":2051.9,"cd_mcfd":3203.19},{"month":"2026-02-01","producing_days":28,"oil_bbl":44255,"gas_mcf":125534,"water_bbl":0,"cd_bopd":1580.54,"cd_mcfd":4483.36}],"frac":{"operator":"MEWBOURNE OIL","interval":"RED FORK","formation":"CHEROKEE","location":"18N-16W-31","spud_date":"2025-05-01","completion_date":"2025-10-07","first_prod_date":"2025-10-01","subplay":"STACK NW EXTENSION GAS","lateral_ft":9997,"tvd_ft":9367.25,"upper_perf_ft":9631,"gor_scf_per_bbl":1382.1064,"oil_gravity_api":44,"proppant_lbs":12026222,"proppant_intensity_lbs_per_ft":1216.7363,"fluid_bbl":284187,"fluid_intensity_bbl_per_ft":28.752226,"water_intensity_gal_per_ft":1207.5935,"frac_job_type":"SLICKWATER HC","fluid_type":"FRESH WATER","proppant_type":"SAND ONLY"}}]};
 function getCSS(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
 function fmt(n){ if(n==null||isNaN(n))return "—";
   if(Math.abs(n)>=1e6)return (n/1e6).toFixed(2)+"M";
@@ -102,15 +103,34 @@ document.getElementById("generated").textContent = DATA.source;
 document.getElementById("footer").textContent =
   "Source: " + DATA.source + ". State production is reported monthly; rates shown are calendar-day averages per producing month. Water not reported in state filings.";
 
-// Callout — compare fracs vs production
+// Callout — compare fracs vs production, then explain the landing-zone driver
 (function(){
-  const [a,b] = DATA.wells;
+  const wells = DATA.wells;
+  // strong = higher cum oil, weak = lower
+  const strong = wells.slice().sort((x,y)=>y.cum_bo-x.cum_bo)[0];
+  const weak = wells.slice().sort((x,y)=>x.cum_bo-y.cum_bo)[0];
   const el = document.getElementById("callout");
-  el.innerHTML = `<b>Same frac, different rock.</b> Both wells share a pad and were completed the same day with
-    near-identical jobs (~${fmt(a.frac.proppant_intensity_lbs_per_ft)} vs ~${fmt(b.frac.proppant_intensity_lbs_per_ft)} lbs/ft proppant,
-    ~${a.frac.fluid_intensity_bbl_per_ft.toFixed(1)} vs ~${b.frac.fluid_intensity_bbl_per_ft.toFixed(1)} bbl/ft fluid),
-    yet ${b.name} peaks at ${fmt(b.peak_bopd)} BOPD vs ${fmt(a.peak_bopd)} BOPD for ${a.name} —
-    a ~${(b.peak_bopd/a.peak_bopd).toFixed(1)}x oil difference driven by landing zone, not completion design.`;
+  const tvdDiff = Math.abs((strong.frac.tvd_ft||0)-(weak.frac.tvd_ft||0));
+  const oilMult = (strong.cum_bo/weak.cum_bo).toFixed(1);
+  el.innerHTML = `
+    <div style="font-size:14px;margin-bottom:8px"><b>Same pad, same frac — different landing zone.</b></div>
+    <p style="margin:0 0 8px">Both wells were drilled from the <b>same surface pad</b> (identical
+      lat/long) and completed the <b>same day</b> with near-identical jobs:
+      ~${fmt(weak.frac.proppant_intensity_lbs_per_ft)} vs ~${fmt(strong.frac.proppant_intensity_lbs_per_ft)} lbs/ft proppant and
+      ~${weak.frac.fluid_intensity_bbl_per_ft.toFixed(1)} vs ~${strong.frac.fluid_intensity_bbl_per_ft.toFixed(1)} bbl/ft fluid.
+      Completion design is effectively a controlled variable here.</p>
+    <p style="margin:0 0 8px">Yet <b>${strong.name}</b> has produced <b>${fmt(strong.cum_bo)} bbl</b> of oil vs
+      <b>${fmt(weak.cum_bo)} bbl</b> for <b>${weak.name}</b> — a <b>~${oilMult}x</b> difference. The driver is
+      where each lateral is landed in the Red Fork section:</p>
+    <ul style="margin:0 0 8px 18px;padding:0">
+      <li><b>${strong.name}</b> is landed ~${fmt(tvdDiff)} ft <b>shallower</b> (TVD ${fmt(strong.frac.tvd_ft)} ft, top perf ${fmt(strong.frac.upper_perf_ft)} ft)
+        in oilier rock — GOR <b>${fmt(strong.frac.gor_scf_per_bbl)} scf/bbl</b>, ${strong.frac.oil_gravity_api}&deg; API.</li>
+      <li><b>${weak.name}</b> sits ~${fmt(tvdDiff)} ft <b>deeper</b> (TVD ${fmt(weak.frac.tvd_ft)} ft, top perf ${fmt(weak.frac.upper_perf_ft)} ft)
+        in a gassier interval — GOR <b>${fmt(weak.frac.gor_scf_per_bbl)} scf/bbl</b> (≈${(weak.frac.gor_scf_per_bbl/strong.frac.gor_scf_per_bbl).toFixed(1)}x gassier), ${weak.frac.oil_gravity_api}&deg; API.</li>
+    </ul>
+    <p style="margin:0;color:var(--muted);font-size:12.5px">The "${strong.name.match(/\b([A-Z]{2})\b/)?strong.name.match(/\b([A-Z]{2})\b/)[1]:''}" / "${weak.name.match(/\b([A-Z]{2})\b/)?weak.name.match(/\b([A-Z]{2})\b/)[1]:''}" codes in the well names are
+      Mewbourne's internal bench designations. Takeaway: in this part of the STACK NW extension, a ~50 ft change in
+      landing depth swings the oil/gas split dramatically — zone selection, not frac size, governs oil recovery here.</p>`;
 })();
 
 // Summary cards
@@ -141,7 +161,10 @@ const FRAC_ROWS = [
   { key:"spud_date", label:"Spud date", fmt:"text" },
   { key:"completion_date", label:"Completion date", fmt:"text" },
   { key:"lateral_ft", label:"Lateral length (ft)", fmt:"int", bar:true },
-  { key:"tvd_ft", label:"TVD (ft)", fmt:"int" },
+  { key:"tvd_ft", label:"TVD (ft) — landing depth", fmt:"int" },
+  { key:"upper_perf_ft", label:"Top perforation (ft)", fmt:"int" },
+  { key:"gor_scf_per_bbl", label:"GOR (scf/bbl)", fmt:"int", bar:true },
+  { key:"oil_gravity_api", label:"Oil gravity (°API)", fmt:"int" },
   { key:"proppant_lbs", label:"Total proppant (lbs)", fmt:"int", bar:true },
   { key:"proppant_intensity_lbs_per_ft", label:"Proppant intensity (lbs/ft)", fmt:"int", bar:true },
   { key:"fluid_bbl", label:"Total fluid (bbl)", fmt:"int", bar:true },
