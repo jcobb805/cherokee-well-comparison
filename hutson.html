@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hutson 30-31H — King Energy</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg:#0f1419; --panel:#171c24; --panel2:#1f2630; --border:#2a313c;
+    --text:#e6edf3; --muted:#8b98a5; --accent:#ffb347;
+    --hutson:#ffb347; --cherokee:#7ee787; --redfork:#5ac8fa;
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; padding:0; background:var(--bg); color:var(--text);
+    font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; }
+  header { padding:22px 28px 14px; border-bottom:1px solid var(--border);
+    display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  header h1 { margin:0; font-size:20px; font-weight:600; }
+  header .meta { color:var(--muted); font-size:12px; }
+  nav { padding:10px 28px; border-bottom:1px solid var(--border); background:var(--panel); display:flex; gap:8px; flex-wrap:wrap; }
+  nav a { color:var(--muted); text-decoration:none; padding:6px 12px; border-radius:6px; font-size:13px; }
+  nav a:hover { background:var(--panel2); color:var(--text); }
+  nav a.active { background:var(--accent); color:#1a1206; font-weight:600; }
+  main { padding:18px 28px 40px; max-width:1680px; margin:0 auto; }
+
+  .summary { display:grid; grid-template-columns: 2fr 1fr; gap:14px; margin-bottom:16px; }
+  @media (max-width: 1100px) { .summary { grid-template-columns: 1fr; } }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
+  .card h3 { margin:0 0 8px; font-size:15px; font-weight:600; display:flex; align-items:center; gap:8px; }
+  .card .sub { color:var(--muted); font-size:12px; margin-bottom:10px; }
+  .swatch { width:12px; height:12px; border-radius:3px; display:inline-block; }
+  .stats { display:grid; grid-template-columns: auto 1fr; gap:4px 14px; font-size:13px; }
+  .stats span { color:var(--muted); }
+  .stats b { text-align:right; font-variant-numeric:tabular-nums; }
+
+  .controls { display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-bottom:14px;
+    background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:10px 14px; }
+  .seg { display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+  .seg button { background:var(--panel2); color:var(--muted); border:0; padding:6px 12px; font-size:12px; cursor:pointer; }
+  .seg button.active { background:var(--accent); color:#1a1206; font-weight:600; }
+
+  .grid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:16px; }
+  @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
+  .chart-card { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
+  .chart-card h3 { margin:0 0 10px; font-size:15px; font-weight:600; }
+  .chart-card .unit { color:var(--muted); font-size:12px; font-weight:400; margin-left:6px; }
+  .chart-wrap { position:relative; height:380px; }
+  .callout { background:var(--panel); border:1px solid var(--border); border-left:3px solid var(--accent);
+    border-radius:8px; padding:12px 16px; margin-bottom:18px; font-size:13px; }
+  footer { padding:18px 28px 40px; color:var(--muted); font-size:12px; max-width:1680px; margin:0 auto; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Hutson 30-31H — King Energy</h1>
+    <div class="meta">Virgil formation · Beckham Co OK · 11N-23W Sec 19 · 2 townships S of Beaty Cherokee wells</div>
+  </div>
+  <div class="meta" id="generated"></div>
+</header>
+
+<nav>
+  <a href="index.html">Beaty / Malson / Quetzal / Jess</a>
+  <a href="dusty.html">Dusty 1H vs 2H</a>
+  <a href="redfork.html">Red Fork Cohort</a>
+  <a href="hutson.html" class="active">Hutson vs Type Curves</a>
+</nav>
+
+<main>
+  <div class="callout" id="callout"></div>
+  <section class="summary">
+    <div class="card">
+      <h3><span class="swatch" style="background:var(--hutson)"></span>Hutson 30-31H</h3>
+      <div class="sub" id="hutson-sub"></div>
+      <div class="stats" id="hutson-stats"></div>
+    </div>
+    <div class="card">
+      <h3>Comparison Cohorts</h3>
+      <div class="sub" id="cohort-sub"></div>
+      <div class="stats" id="cohort-stats"></div>
+    </div>
+  </section>
+
+  <div class="controls">
+    <div class="seg" id="view-seg">
+      <button data-v="month" class="active">Monthly P50</button>
+      <button data-v="daily">Hutson Daily</button>
+    </div>
+    <div class="seg" id="band-seg">
+      <button data-b="off" class="active">P50 only</button>
+      <button data-b="on">P10–P90 band</button>
+    </div>
+    <div class="seg" id="scale-seg">
+      <button data-s="linear" class="active">Linear</button>
+      <button data-s="logarithmic">Log</button>
+    </div>
+  </div>
+
+  <section class="grid">
+    <div class="chart-card">
+      <h3>Oil Rate <span class="unit">BOPD · months on production</span></h3>
+      <div class="chart-wrap"><canvas id="chart-bopd"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Gas Rate <span class="unit">MCFD · months on production</span></h3>
+      <div class="chart-wrap"><canvas id="chart-mcfd"></canvas></div>
+    </div>
+  </section>
+</main>
+
+<footer id="footer"></footer>
+
+<script>
+const DATA = {"meta":{"name":"Hutson 30-31H","api":"35-009-00005","operator":"King Energy LLC (King Operating)","county":"Beckham, OK","location":"11N-23W Sec 19","formation":"VIRGIL","spud_date":"2025-12-05","completion_date":"2026-03-01","first_prod_date":"2026-03-10","lateral_ft":11317,"tvd_ft":9100,"md_ft":19534,"oil_gravity_api":null,"gor_scf_per_bbl":449,"lat":35.4084,"lon":-99.6668,"source":"Operator daily CSV + Enverus v3 (header)"},"kpis":{"days_reported":111,"first_oil":"2026-03-10","last_report":"2026-06-28","cum_oil":132148.3,"cum_gas":71396.0,"cum_water":56565.5,"peak_bopd":2036.0,"peak_mcfd":1109.0,"gor_avg":540.0},"hutson_daily":[{"date":"2026-03-10","bopd":1082.0,"mcfd":0,"bwpd":1291.0},{"date":"2026-03-11","bopd":1904.0,"mcfd":0,"bwpd":1545.0},{"date":"2026-03-12","bopd":1883.0,"mcfd":740.0,"bwpd":1279.0},{"date":"2026-03-13","bopd":1022.0,"mcfd":921.0,"bwpd":1379.0},{"date":"2026-03-14","bopd":1639.0,"mcfd":937.0,"bwpd":1305.0},{"date":"2026-03-15","bopd":1493.0,"mcfd":874.0,"bwpd":1105.0},{"date":"2026-03-16","bopd":1498.0,"mcfd":843.0,"bwpd":1056.0},{"date":"2026-03-17","bopd":1535.0,"mcfd":826.0,"bwpd":1003.0},{"date":"2026-03-18","bopd":1560.0,"mcfd":829.0,"bwpd":998.0},{"date":"2026-03-19","bopd":1567.0,"mcfd":881.0,"bwpd":954.0},{"date":"2026-03-20","bopd":1610.0,"mcfd":889.0,"bwpd":910.0},{"date":"2026-03-21","bopd":1584.0,"mcfd":878.0,"bwpd":889.0},{"date":"2026-03-22","bopd":1560.0,"mcfd":881.0,"bwpd":815.0},{"date":"2026-03-23","bopd":1546.0,"mcfd":858.0,"bwpd":788.0},{"date":"2026-03-24","bopd":1516.0,"mcfd":840.0,"bwpd":759.0},{"date":"2026-03-25","bopd":1488.0,"mcfd":831.0,"bwpd":750.0},{"date":"2026-03-26","bopd":1469.0,"mcfd":820.0,"bwpd":681.0},{"date":"2026-03-27","bopd":1435.0,"mcfd":801.0,"bwpd":672.0},{"date":"2026-03-28","bopd":1426.0,"mcfd":763.0,"bwpd":642.95},{"date":"2026-03-29","bopd":1396.0,"mcfd":764.0,"bwpd":632.0},{"date":"2026-03-30","bopd":1376.35,"mcfd":757.0,"bwpd":610.0},{"date":"2026-03-31","bopd":1343.0,"mcfd":746.0,"bwpd":577.0},{"date":"2026-04-01","bopd":1335.0,"mcfd":733.0,"bwpd":570.0},{"date":"2026-04-02","bopd":1308.0,"mcfd":717.0,"bwpd":552.0},{"date":"2026-04-03","bopd":321.0,"mcfd":177.0,"bwpd":134.0},{"date":"2026-04-04","bopd":0,"mcfd":0,"bwpd":0},{"date":"2026-04-05","bopd":0,"mcfd":0,"bwpd":0},{"date":"2026-04-06","bopd":0,"mcfd":0,"bwpd":0},{"date":"2026-04-07","bopd":0,"mcfd":0,"bwpd":0},{"date":"2026-04-08","bopd":0,"mcfd":0,"bwpd":0},{"date":"2026-04-09","bopd":0,"mcfd":0,"bwpd":0},{"date":"2026-04-10","bopd":0,"mcfd":0,"bwpd":0},{"date":"2026-04-11","bopd":9.0,"mcfd":0,"bwpd":164.0},{"date":"2026-04-12","bopd":1277.0,"mcfd":0,"bwpd":1047.0},{"date":"2026-04-13","bopd":1848.0,"mcfd":998.0,"bwpd":956.0},{"date":"2026-04-14","bopd":2036.0,"mcfd":1109.0,"bwpd":828.0},{"date":"2026-04-15","bopd":1871.0,"mcfd":1044.0,"bwpd":711.0},{"date":"2026-04-16","bopd":1797.0,"mcfd":1003.0,"bwpd":610.02},{"date":"2026-04-17","bopd":1754.0,"mcfd":982.0,"bwpd":639.0},{"date":"2026-04-18","bopd":1771.74,"mcfd":971.0,"bwpd":598.59},{"date":"2026-04-19","bopd":1730.34,"mcfd":963.0,"bwpd":566.14},{"date":"2026-04-20","bopd":1716.81,"mcfd":913.0,"bwpd":550.96},{"date":"2026-04-21","bopd":1670.0,"mcfd":928.0,"bwpd":567.94},{"date":"2026-04-22","bopd":1589.71,"mcfd":874.0,"bwpd":532.48},{"date":"2026-04-23","bopd":1538.64,"mcfd":869.0,"bwpd":526.81},{"date":"2026-04-24","bopd":1506.31,"mcfd":837.0,"bwpd":512.76},{"date":"2026-04-25","bopd":1496.32,"mcfd":822.0,"bwpd":491.16},{"date":"2026-04-26","bopd":1491.89,"mcfd":837.0,"bwpd":474.38},{"date":"2026-04-27","bopd":1450.59,"mcfd":822.0,"bwpd":498.06},{"date":"2026-04-28","bopd":1423.89,"mcfd":808.0,"bwpd":476.83},{"date":"2026-04-29","bopd":1424.42,"mcfd":790.0,"bwpd":474.36},{"date":"2026-04-30","bopd":1395.63,"mcfd":777.0,"bwpd":470.72},{"date":"2026-05-01","bopd":1382.34,"mcfd":767.0,"bwpd":457.7},{"date":"2026-05-02","bopd":1361.32,"mcfd":759.0,"bwpd":450.3},{"date":"2026-05-03","bopd":1337.65,"mcfd":751.0,"bwpd":455.48},{"date":"2026-05-04","bopd":1316.19,"mcfd":736.0,"bwpd":443.38},{"date":"2026-05-05","bopd":1228.7,"mcfd":722.0,"bwpd":422.29},{"date":"2026-05-06","bopd":1204.49,"mcfd":704.0,"bwpd":461.3},{"date":"2026-05-07","bopd":1256.92,"mcfd":667.0,"bwpd":439.25},{"date":"2026-05-08","bopd":1260.53,"mcfd":760.0,"bwpd":426.32},{"date":"2026-05-09","bopd":1243.65,"mcfd":833.0,"bwpd":425.25},{"date":"2026-05-10","bopd":1272.11,"mcfd":861.0,"bwpd":430.94},{"date":"2026-05-11","bopd":1250.28,"mcfd":828.0,"bwpd":423.28},{"date":"2026-05-12","bopd":1162.12,"mcfd":782.0,"bwpd":401.64},{"date":"2026-05-13","bopd":1085.44,"mcfd":738.0,"bwpd":384.26},{"date":"2026-05-14","bopd":1057.29,"mcfd":600.0,"bwpd":349.07},{"date":"2026-05-15","bopd":924.76,"mcfd":503.0,"bwpd":314.73},{"date":"2026-05-16","bopd":930.19,"mcfd":573.0,"bwpd":320.02},{"date":"2026-05-17","bopd":898.46,"mcfd":579.0,"bwpd":323.68},{"date":"2026-05-18","bopd":925.18,"mcfd":572.0,"bwpd":309.7},{"date":"2026-05-19","bopd":893.45,"mcfd":518.0,"bwpd":321.08},{"date":"2026-05-20","bopd":898.88,"mcfd":480.0,"bwpd":366.7},{"date":"2026-05-21","bopd":888.44,"mcfd":499.0,"bwpd":336.08},{"date":"2026-05-22","bopd":900.55,"mcfd":472.0,"bwpd":290.28},{"date":"2026-05-23","bopd":880.92,"mcfd":469.0,"bwpd":282.98},{"date":"2026-05-24","bopd":871.32,"mcfd":466.0,"bwpd":301.66},{"date":"2026-05-25","bopd":861.72,"mcfd":463.0,"bwpd":286.94},{"date":"2026-05-26","bopd":873.39,"mcfd":461.0,"bwpd":306.34},{"date":"2026-05-27","bopd":848.61,"mcfd":455.0,"bwpd":301.99},{"date":"2026-05-28","bopd":846.74,"mcfd":430.0,"bwpd":291.36},{"date":"2026-05-29","bopd":822.05,"mcfd":452.0,"bwpd":299.29},{"date":"2026-05-30","bopd":826.35,"mcfd":455.0,"bwpd":295.98},{"date":"2026-05-31","bopd":826.26,"mcfd":452.0,"bwpd":297.99},{"date":"2026-06-01","bopd":1421.21,"mcfd":823.0,"bwpd":495.21},{"date":"2026-06-02","bopd":1388.55,"mcfd":809.0,"bwpd":446.92},{"date":"2026-06-03","bopd":1367.89,"mcfd":788.0,"bwpd":459.42},{"date":"2026-06-04","bopd":1335.55,"mcfd":776.0,"bwpd":457.68},{"date":"2026-06-05","bopd":1341.81,"mcfd":780.0,"bwpd":473.7},{"date":"2026-06-06","bopd":1373.72,"mcfd":787.0,"bwpd":479.99},{"date":"2026-06-07","bopd":1406.32,"mcfd":790.0,"bwpd":475.31},{"date":"2026-06-08","bopd":1257.72,"mcfd":673.0,"bwpd":464.96},{"date":"2026-06-09","bopd":1264.67,"mcfd":716.0,"bwpd":454.26},{"date":"2026-06-10","bopd":1241.54,"mcfd":701.0,"bwpd":436.64},{"date":"2026-06-11","bopd":1266.6,"mcfd":721.0,"bwpd":459.36},{"date":"2026-06-12","bopd":1104.19,"mcfd":628.0,"bwpd":390.18},{"date":"2026-06-13","bopd":59.3,"mcfd":9.0,"bwpd":16.06},{"date":"2026-06-14","bopd":0,"mcfd":0,"bwpd":0},{"date":"2026-06-15","bopd":0,"mcfd":0,"bwpd":0},{"date":"2026-06-16","bopd":0,"mcfd":0,"bwpd":0},{"date":"2026-06-17","bopd":0,"mcfd":152.0,"bwpd":297.26},{"date":"2026-06-18","bopd":1369.18,"mcfd":701.0,"bwpd":562.4},{"date":"2026-06-19","bopd":1469.39,"mcfd":520.0,"bwpd":524.76},{"date":"2026-06-20","bopd":1573.03,"mcfd":793.0,"bwpd":529.92},{"date":"2026-06-21","bopd":1576.83,"mcfd":823.0,"bwpd":506.76},{"date":"2026-06-22","bopd":1595.11,"mcfd":907.0,"bwpd":488.42},{"date":"2026-06-23","bopd":1648.55,"mcfd":851.0,"bwpd":548.16},{"date":"2026-06-24","bopd":1554.79,"mcfd":794.0,"bwpd":520.06},{"date":"2026-06-25","bopd":1555.07,"mcfd":793.0,"bwpd":530.2},{"date":"2026-06-26","bopd":1907.81,"mcfd":855.0,"bwpd":557.24},{"date":"2026-06-27","bopd":1443.4,"mcfd":855.0,"bwpd":600.28},{"date":"2026-06-28","bopd":1595.09,"mcfd":891.0,"bwpd":579.9}],"hutson_monthly":[{"moidx":1,"month":"2026-03","days":22,"bopd":1496.9,"mcfd":758.1,"bwpd":938.2},{"moidx":2,"month":"2026-04","days":30,"bopd":1125.4,"mcfd":599.1,"bwpd":431.7},{"moidx":3,"month":"2026-05","days":31,"bopd":1043.1,"mcfd":606.7,"bwpd":361.8},{"moidx":4,"month":"2026-06","days":28,"bopd":1182.8,"mcfd":640.6,"bwpd":419.8}],"cherokee_cohort":{"wells":[{"name":"Beaty 1-2-11-14CHX","id":"beaty_11_14"},{"name":"Beaty 1-2-35CHX","id":"beaty_35"},{"name":"Malson 1523 1-6H31H","id":"malson"},{"name":"Jess 1523 2-6H31H","id":"jess"},{"name":"QUETZAL 1-6-7XHR","id":"quetzal"}],"bopd":[{"x":1,"n":5,"p10":310.99999999999994,"p50":828.8,"p90":938.3400000000001},{"x":2,"n":5,"p10":188.9,"p50":832.32,"p90":940.5600000000001},{"x":3,"n":5,"p10":128.23999999999998,"p50":600.16,"p90":743.04},{"x":4,"n":3,"p10":527.4,"p50":563.73,"p90":610.7},{"x":5,"n":2,"p10":451.03,"p50":451.115,"p90":451.2}],"mcfd":[{"x":1,"n":5,"p10":1828.622,"p50":4245.4,"p90":6205.5},{"x":2,"n":5,"p10":3148.1620000000007,"p50":4554.7,"p90":5007.42},{"x":3,"n":5,"p10":2470.2139999999995,"p50":3602.1,"p90":4548.74},{"x":4,"n":3,"p10":2784.1,"p50":2991.3,"p90":3869.4},{"x":5,"n":2,"p10":2316.84,"p50":2476.7200000000003,"p90":2636.6}]},"redfork_cohort":{"n_wells":60,"bopd":[{"x":1,"n":60,"p10":18.270000000000003,"p50":212.75,"p90":798.0799999999999},{"x":2,"n":59,"p10":90.5,"p50":503.0,"p90":1061.6},{"x":3,"n":57,"p10":53.279999999999994,"p50":431.3,"p90":866.68},{"x":4,"n":56,"p10":83.24,"p50":333.65,"p90":762.4499999999999},{"x":5,"n":54,"p10":86.0,"p50":277.2,"p90":667.35},{"x":6,"n":48,"p10":45.87,"p50":209.39999999999998,"p90":635.4000000000001},{"x":7,"n":46,"p10":58.64,"p50":165.2,"p90":526.3000000000001},{"x":8,"n":44,"p10":42.2,"p50":156.85,"p90":470.85},{"x":9,"n":43,"p10":41.86,"p50":146.6,"p90":417.2},{"x":10,"n":43,"p10":26.439999999999998,"p50":142.7,"p90":358.19999999999993},{"x":11,"n":43,"p10":33.480000000000004,"p50":120.5,"p90":353.38},{"x":12,"n":42,"p10":21.799999999999997,"p50":106.75,"p90":332.98},{"x":13,"n":42,"p10":32.23,"p50":112.0,"p90":320.16},{"x":14,"n":42,"p10":31.689999999999998,"p50":96.45,"p90":270.41999999999996},{"x":15,"n":42,"p10":24.0,"p50":90.0,"p90":254.54000000000005},{"x":16,"n":41,"p10":29.48,"p50":91.4,"p90":219.54000000000002},{"x":17,"n":40,"p10":25.4,"p50":80.75,"p90":182.75},{"x":18,"n":39,"p10":18.5,"p50":68.8,"p90":183.4},{"x":19,"n":39,"p10":24.5,"p50":69.6,"p90":176.8},{"x":20,"n":39,"p10":21.7,"p50":62.3,"p90":155.1},{"x":21,"n":38,"p10":12.19,"p50":62.05,"p90":155.29000000000002},{"x":22,"n":35,"p10":20.82,"p50":73.0,"p90":137.3},{"x":23,"n":35,"p10":15.720000000000002,"p50":69.4,"p90":144.62},{"x":24,"n":33,"p10":24.080000000000002,"p50":67.3,"p90":111.55999999999999},{"x":25,"n":33,"p10":12.739999999999998,"p50":54.4,"p90":131.23999999999998},{"x":26,"n":33,"p10":17.04,"p50":57.3,"p90":114.61999999999998},{"x":27,"n":33,"p10":17.939999999999998,"p50":51.1,"p90":96.0},{"x":28,"n":32,"p10":14.790000000000001,"p50":58.349999999999994,"p90":119.62},{"x":29,"n":31,"p10":13.76,"p50":56.2,"p90":87.02000000000001},{"x":30,"n":30,"p10":16.28,"p50":44.85,"p90":75.11},{"x":31,"n":30,"p10":7.62,"p50":38.7,"p90":85.41999999999999},{"x":32,"n":30,"p10":6.81,"p50":43.95,"p90":68.32},{"x":33,"n":29,"p10":12.3,"p50":40.7,"p90":87.1},{"x":34,"n":29,"p10":13.8,"p50":47.3,"p90":91.3},{"x":35,"n":29,"p10":12.4,"p50":41.8,"p90":75.4},{"x":36,"n":28,"p10":11.41,"p50":40.4,"p90":73.11},{"x":37,"n":27,"p10":10.879999999999999,"p50":36.5,"p90":70.74},{"x":38,"n":27,"p10":6.279999999999999,"p50":34.3,"p90":69.38},{"x":39,"n":27,"p10":4.88,"p50":24.4,"p90":63.779999999999994},{"x":40,"n":25,"p10":5.92,"p50":31.3,"p90":71.46000000000001},{"x":41,"n":25,"p10":6.540000000000001,"p50":36.0,"p90":67.0},{"x":42,"n":25,"p10":6.18,"p50":31.3,"p90":61.52},{"x":43,"n":23,"p10":12.2,"p50":35.5,"p90":58.44000000000001},{"x":44,"n":22,"p10":8.18,"p50":33.25,"p90":72.86},{"x":45,"n":21,"p10":11.120000000000001,"p50":29.7,"p90":72.26},{"x":46,"n":19,"p10":6.4,"p50":23.3,"p90":79.0},{"x":47,"n":17,"p10":6.16,"p50":31.2,"p90":62.02},{"x":48,"n":15,"p10":6.32,"p50":25.1,"p90":65.54},{"x":49,"n":14,"p10":8.85,"p50":33.55,"p90":51.35},{"x":50,"n":13,"p10":5.92,"p50":18.4,"p90":70.06},{"x":51,"n":13,"p10":2.2399999999999998,"p50":32.7,"p90":73.12},{"x":52,"n":12,"p10":7.74,"p50":23.2,"p90":57.84000000000001},{"x":53,"n":9,"p10":0.0,"p50":34.9,"p90":65.5},{"x":54,"n":8,"p10":4.42,"p50":33.15,"p90":75.47},{"x":55,"n":6,"p10":12.7,"p50":39.9,"p90":87.75},{"x":56,"n":4,"p10":0,"p50":45.8,"p90":84.6},{"x":57,"n":3,"p10":11.4,"p50":48.5,"p90":74.4},{"x":58,"n":3,"p10":23.7,"p50":54.8,"p90":84.1},{"x":59,"n":3,"p10":16.9,"p50":49.7,"p90":56},{"x":60,"n":2,"p10":24.3,"p50":44.65,"p90":65.0},{"x":61,"n":2,"p10":12.3,"p50":36.3,"p90":60.3},{"x":62,"n":2,"p10":12.9,"p50":33.300000000000004,"p90":53.7}],"mcfd":[{"x":1,"n":60,"p10":0.0,"p50":669.05,"p90":3483.81},{"x":2,"n":59,"p10":8.3,"p50":1955.9,"p90":6094.3},{"x":3,"n":57,"p10":228.9,"p50":2035.0,"p90":7032.38},{"x":4,"n":56,"p10":216.76,"p50":1883.3,"p90":6138.98},{"x":5,"n":54,"p10":83.6,"p50":1265.35,"p90":5163.1},{"x":6,"n":48,"p10":80.06,"p50":967.8,"p90":4746.889999999999},{"x":7,"n":46,"p10":44.59,"p50":895.75,"p90":4153.15},{"x":8,"n":44,"p10":97.55,"p50":970.4,"p90":3582.05},{"x":9,"n":43,"p10":103.08,"p50":947.5,"p90":3736.0600000000004},{"x":10,"n":43,"p10":102.9,"p50":906.2,"p90":3538.54},{"x":11,"n":43,"p10":122.92,"p50":894.3,"p90":3138.4800000000005},{"x":12,"n":42,"p10":99.47,"p50":819.4,"p90":3025.0299999999997},{"x":13,"n":42,"p10":124.8,"p50":780.4000000000001,"p90":3569.65},{"x":14,"n":42,"p10":75.66,"p50":753.2,"p90":3612.54},{"x":15,"n":42,"p10":109.09,"p50":719.8,"p90":3628.7600000000007},{"x":16,"n":41,"p10":73.64000000000001,"p50":649.4,"p90":2122.5},{"x":17,"n":40,"p10":71.05999999999999,"p50":592.8499999999999,"p90":2735.5899999999997},{"x":18,"n":39,"p10":104.7,"p50":597.4,"p90":2043.0},{"x":19,"n":39,"p10":98.4,"p50":448.3,"p90":2002.3},{"x":20,"n":39,"p10":86.8,"p50":496.1,"p90":1958.4},{"x":21,"n":38,"p10":26.909999999999997,"p50":480.0,"p90":1473.92},{"x":22,"n":35,"p10":73.1,"p50":484.2,"p90":1158.9},{"x":23,"n":35,"p10":78.24000000000001,"p50":454.8,"p90":1211.9},{"x":24,"n":33,"p10":93.82000000000001,"p50":453.1,"p90":1513.2400000000002},{"x":25,"n":33,"p10":80.82000000000001,"p50":572.9,"p90":2153.02},{"x":26,"n":33,"p10":35.12,"p50":443.7,"p90":1487.42},{"x":27,"n":33,"p10":62.54,"p50":466.5,"p90":1607.3600000000001},{"x":28,"n":32,"p10":31.519999999999992,"p50":544.3,"p90":1403.0400000000002},{"x":29,"n":31,"p10":31.839999999999996,"p50":479.6,"p90":1331.6},{"x":30,"n":30,"p10":55.45,"p50":404.3,"p90":1450.79},{"x":31,"n":30,"p10":76.65,"p50":352.15,"p90":1219.41},{"x":32,"n":30,"p10":58.48,"p50":295.9,"p90":926.5199999999999},{"x":33,"n":29,"p10":96.0,"p50":401.3,"p90":968.8},{"x":34,"n":29,"p10":81.5,"p50":382.5,"p90":854.3},{"x":35,"n":29,"p10":71.7,"p50":365,"p90":828.8},{"x":36,"n":28,"p10":62.220000000000006,"p50":372.25,"p90":809.76},{"x":37,"n":27,"p10":64.94,"p50":367.7,"p90":784.72},{"x":38,"n":27,"p10":55.46,"p50":356.1,"p90":729.3399999999999},{"x":39,"n":27,"p10":9.739999999999998,"p50":360.6,"p90":717.3},{"x":40,"n":25,"p10":78.32000000000001,"p50":371.7,"p90":674.22},{"x":41,"n":25,"p10":14.939999999999998,"p50":313.5,"p90":689.54},{"x":42,"n":25,"p10":14.460000000000003,"p50":293.6,"p90":769.72},{"x":43,"n":23,"p10":49.14,"p50":347.3,"p90":805.4199999999998},{"x":44,"n":22,"p10":43.980000000000004,"p50":333.3,"p90":863.65},{"x":45,"n":21,"p10":7.82,"p50":248.5,"p90":705.1200000000001},{"x":46,"n":19,"p10":0.0,"p50":205.9,"p90":721.4},{"x":47,"n":17,"p10":8.16,"p50":232.6,"p90":796.36},{"x":48,"n":15,"p10":40.44,"p50":226.1,"p90":875.4599999999998},{"x":49,"n":14,"p10":62.7,"p50":216.85000000000002,"p90":897.9},{"x":50,"n":13,"p10":41.480000000000004,"p50":221.7,"p90":913.0},{"x":51,"n":13,"p10":3.4799999999999995,"p50":265.5,"p90":636.8599999999999},{"x":52,"n":12,"p10":0.0,"p50":171.10000000000002,"p90":639.09},{"x":53,"n":9,"p10":0.0,"p50":172.9,"p90":749.9},{"x":54,"n":8,"p10":20.259999999999998,"p50":181.64999999999998,"p90":762.14},{"x":55,"n":6,"p10":0.0,"p50":191.35000000000002,"p90":830.45},{"x":56,"n":4,"p10":0,"p50":238.85,"p90":736.8},{"x":57,"n":3,"p10":66.5,"p50":545.0,"p90":705.5},{"x":58,"n":3,"p10":65.7,"p50":552.4,"p90":707.5},{"x":59,"n":3,"p10":64.3,"p50":471.9,"p90":691.5},{"x":60,"n":2,"p10":61.1,"p50":181.9,"p90":302.7},{"x":61,"n":2,"p10":67.1,"p50":201.3,"p90":335.5},{"x":62,"n":2,"p10":66.3,"p50":199.65,"p90":333.0}]}};
+function getCSS(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+function fmt(n){ if(n==null||isNaN(n))return "—";
+  if(Math.abs(n)>=1e6)return (n/1e6).toFixed(2)+"M";
+  if(Math.abs(n)>=1e3)return (n/1e3).toFixed(n>=10000?0:1)+"k";
+  return n.toLocaleString(undefined,{maximumFractionDigits:0}); }
+
+document.getElementById("generated").textContent = "Source: " + DATA.meta.source;
+document.getElementById("footer").textContent =
+  "Cherokee P50 built from the daily wells on the main dashboard (Beaty 11-14, Beaty 35, Malson, Jess) plus Quetzal monthly state filings, aggregated to producing-day monthly averages and indexed by months on production. " +
+  "Red Fork P50 from the 60-well cohort on the Red Fork page. Hutson daily values from King Energy CSV.";
+
+// Hutson card
+const m = DATA.meta, k = DATA.kpis;
+document.getElementById("hutson-sub").textContent = `${m.operator} · API ${m.api} · ${m.location} · ${m.formation} · TVD ${m.tvd_ft.toLocaleString()} ft · ${m.lateral_ft.toLocaleString()} ft lateral`;
+document.getElementById("hutson-stats").innerHTML = `
+  <span>First oil</span><b>${k.first_oil}</b>
+  <span>Last report</span><b>${k.last_report}</b>
+  <span>Days reported</span><b>${k.days_reported}</b>
+  <span>Peak BOPD</span><b>${fmt(k.peak_bopd)}</b>
+  <span>Peak MCFD</span><b>${fmt(k.peak_mcfd)}</b>
+  <span>Cum oil (bbl)</span><b>${fmt(k.cum_oil)}</b>
+  <span>Cum gas (Mcf)</span><b>${fmt(k.cum_gas)}</b>
+  <span>Cum water (bbl)</span><b>${fmt(k.cum_water)}</b>
+  <span>Avg GOR (scf/bbl)</span><b>${fmt(k.gor_avg)}</b>
+`;
+
+// Cohorts card
+const cherokeeNames = DATA.cherokee_cohort.wells.map(w=>w.name.replace(/Beaty 1-2-/,"Beaty ").replace(/1523 [12]-6H31H/,"")).join(", ");
+document.getElementById("cohort-sub").textContent = `Two reference type curves built from our existing sampling.`;
+document.getElementById("cohort-stats").innerHTML = `
+  <span><span class="swatch" style="background:var(--cherokee)"></span>Cherokee P50</span><b>${DATA.cherokee_cohort.wells.length} wells</b>
+  <span style="grid-column:1/3;color:var(--muted);font-size:11px;margin:-2px 0 4px">${cherokeeNames}</span>
+  <span><span class="swatch" style="background:var(--redfork)"></span>Red Fork P50</span><b>${DATA.redfork_cohort.n_wells} wells</b>
+  <span style="grid-column:1/3;color:var(--muted);font-size:11px">Custer + Dewey horizontals completed 2021+, normalized to months on production</span>
+`;
+
+// Callout
+(function(){
+  const h = DATA.kpis;
+  const cher = DATA.cherokee_cohort.bopd, rf = DATA.redfork_cohort.bopd;
+  // pull P50 at month 1 for each reference
+  const cher1 = cher.find(p=>p.x===1)?.p50 ?? null;
+  const rf1 = rf.find(p=>p.x===1)?.p50 ?? null;
+  const hut1 = DATA.hutson_monthly[0]?.bopd ?? null;
+  document.getElementById("callout").innerHTML =
+    `<b>Oil window play.</b> Hutson 30-31H is landed in the <b>Virgil</b> formation at TVD ${DATA.meta.tvd_ft.toLocaleString()} ft —
+     about ${(11500-DATA.meta.tvd_ft).toLocaleString()} ft shallower than the Cherokee wells in Roger Mills, two townships north. The well is producing ~${fmt(h.peak_bopd)} BOPD peak
+     with an average GOR of just <b>${fmt(h.gor_avg)} scf/bbl</b> — vastly oilier than the Cherokee (typically 5,000-15,000 scf/bbl)
+     and Red Fork (~3,000-17,000 scf/bbl) gas-cut wells we've been comparing. Hutson's month-1 oil rate of <b>~${fmt(hut1)} BOPD</b>
+     compares to <b>~${fmt(cher1)} BOPD</b> (Cherokee P50) and <b>~${fmt(rf1)} BOPD</b> (Red Fork P50). Different rock, different play.`;
+})();
+
+// ---- charts ----
+let view = "month", band = false, scale = "linear";
+document.querySelectorAll("#view-seg button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#view-seg button").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active"); view = b.dataset.v; render(); });
+document.querySelectorAll("#band-seg button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#band-seg button").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active"); band = b.dataset.b === "on"; render(); });
+document.querySelectorAll("#scale-seg button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#scale-seg button").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active"); scale = b.dataset.s; render(); });
+
+const charts = { bopd: null, mcfd: null };
+
+function makeDatasets(metric){
+  const ds = [];
+  const cher = DATA.cherokee_cohort[metric];
+  const rf = DATA.redfork_cohort[metric];
+
+  if (band) {
+    ds.push({label:"Cherokee P90", data: cher.map(p=>({x:p.x,y:p.p90})),
+             borderColor:"transparent", backgroundColor: "rgba(126,231,135,0.10)", fill:"+1",
+             pointRadius:0, tension:0.2});
+    ds.push({label:"Cherokee P10", data: cher.map(p=>({x:p.x,y:p.p10})),
+             borderColor:"transparent", backgroundColor: "rgba(126,231,135,0.10)",
+             pointRadius:0, tension:0.2});
+    ds.push({label:"Red Fork P90", data: rf.map(p=>({x:p.x,y:p.p90})),
+             borderColor:"transparent", backgroundColor:"rgba(90,200,250,0.10)", fill:"+1",
+             pointRadius:0, tension:0.2});
+    ds.push({label:"Red Fork P10", data: rf.map(p=>({x:p.x,y:p.p10})),
+             borderColor:"transparent", backgroundColor:"rgba(90,200,250,0.10)",
+             pointRadius:0, tension:0.2});
+  }
+
+  ds.push({label:`Cherokee P50 (${DATA.cherokee_cohort.wells.length} wells)`,
+           data: cher.map(p=>({x:p.x,y:p.p50})),
+           borderColor:getCSS("--cherokee"), borderWidth:2.2, borderDash:[6,4],
+           pointRadius:3, pointHoverRadius:5, tension:0.2});
+  ds.push({label:`Red Fork P50 (${DATA.redfork_cohort.n_wells} wells)`,
+           data: rf.map(p=>({x:p.x,y:p.p50})),
+           borderColor:getCSS("--redfork"), borderWidth:2.2, borderDash:[6,4],
+           pointRadius:3, pointHoverRadius:5, tension:0.2});
+
+  if (view === "month") {
+    ds.push({label:"Hutson 30-31H",
+             data: DATA.hutson_monthly.map(m=>({x:m.moidx,y:m[metric]})),
+             borderColor:getCSS("--hutson"), borderWidth:3.4,
+             pointRadius:5, pointHoverRadius:7, tension:0.25, order:0});
+  } else {
+    // daily view: convert each daily date to fractional months-on-prod
+    const first = new Date(DATA.hutson_daily[0].date);
+    const pts = DATA.hutson_daily.map(r => {
+      const d = new Date(r.date);
+      const diffDays = (d - first) / 86400000;
+      return { x: 1 + diffDays / 30, y: r[metric] };
+    });
+    ds.push({label:"Hutson daily", data: pts,
+             borderColor:getCSS("--hutson"), borderWidth:1.6,
+             pointRadius:0, pointHoverRadius:3, tension:0.15, order:0});
+  }
+  return ds;
+}
+
+function render(){
+  ["bopd","mcfd"].forEach(metric => {
+    const ctx = document.getElementById("chart-"+metric).getContext("2d");
+    if (charts[metric]) charts[metric].destroy();
+    charts[metric] = new Chart(ctx, {
+      type:"line",
+      data:{ datasets: makeDatasets(metric) },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        interaction:{ mode:"nearest", intersect:false, axis:"x" },
+        plugins:{
+          legend:{ labels:{ color:getCSS("--text"), boxWidth:12, usePointStyle:true,
+            filter: it => !["Cherokee P10","Cherokee P90","Red Fork P10","Red Fork P90"].includes(it.text) } },
+          tooltip:{ backgroundColor:"#0b0f14", borderColor:getCSS("--border"), borderWidth:1,
+            titleColor:getCSS("--text"), bodyColor:getCSS("--text"),
+            callbacks:{ title: it => `Month ${(+it[0].parsed.x).toFixed(view==="daily"?2:0)} on production`,
+                        label: c => `${c.dataset.label}: ${fmt(c.parsed.y)}` } },
+        },
+        scales:{
+          x:{ type:"linear", title:{display:true,color:getCSS("--muted"),text:"Months on production"},
+              ticks:{color:getCSS("--muted"), stepSize:1}, grid:{color:"rgba(255,255,255,0.05)"} },
+          y:{ type: scale, beginAtZero: scale==="linear",
+              min: scale==="logarithmic" ? 1 : undefined,
+              title:{display:true,color:getCSS("--muted"),text: metric==="bopd"?"BOPD":"MCFD"},
+              ticks:{color:getCSS("--muted"), callback:v=>fmt(v)}, grid:{color:"rgba(255,255,255,0.06)"} },
+        },
+      },
+    });
+  });
+}
+render();
+</script>
+</body>
+</html>
